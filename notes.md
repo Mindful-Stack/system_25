@@ -1,9 +1,3 @@
-hej hej
-Lite mer 
-text
-är 
-som
-skapar
-lite
-rader
-some stuff
+hej hej!
+Lite mer text här för att visa på hur en fil fungerar.
+And some stuff on a new line.
