@@ -1,9 +1,2 @@
-hej hej
-Lite mer 
-text
-är 
-som
-skapar
-lite
-rader
-some stuff
+Hej, hej!
+Lite mer text här som skapar lite rader och some stuff... very cool!
