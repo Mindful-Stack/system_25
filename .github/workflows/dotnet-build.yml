@@ -2,6 +2,9 @@ name: Manual .NET Build
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   build:
