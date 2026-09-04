@@ -27,3 +27,17 @@ jobs:
           echo "Branch: ${{ github.ref }}"
 
       - *echo-template
+
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Install .NET 10
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Build project
+        run: dotnet build
+
+      - name: Run code
+        run: dotnet run --project CleanCodeDevOps.App/CleanCodeDevOps.App.csproj
