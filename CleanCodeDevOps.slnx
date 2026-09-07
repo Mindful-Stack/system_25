@@ -1,3 +1,5 @@
 <Solution>
+  <Project Path="CalculatorApp.Tests/CalculatorApp.Tests.csproj" />
+  <Project Path="CalculatorApp/CalculatorApp.csproj" />
   <Project Path="CleanCodeDevOps.App/CleanCodeDevOps.App.csproj" />
 </Solution>
