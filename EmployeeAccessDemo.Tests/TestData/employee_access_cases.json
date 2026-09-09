@@ -1,0 +1,18 @@
+[
+  {
+    "employee": { "name": "Anna", "role": "Manager", "isClockedIn": true },
+    "expected": true
+  },
+  {
+    "employee": { "name": "Erik", "role": "Staff", "isClockedIn": true },
+    "expected": false
+  },
+  {
+    "employee": { "name": "Lisa", "role": "Manager", "isClockedIn": false },
+    "expected": false
+  },
+  {
+    "employee": { "name": "Tom", "role": "Staff", "isClockedIn": false },
+    "expected": false
+  }
+]

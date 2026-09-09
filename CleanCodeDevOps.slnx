@@ -2,4 +2,6 @@
   <Project Path="CalculatorApp.Tests/CalculatorApp.Tests.csproj" />
   <Project Path="CalculatorApp/CalculatorApp.csproj" />
   <Project Path="CleanCodeDevOps.App/CleanCodeDevOps.App.csproj" />
+  <Project Path="EmployeeAccessDemo.Tests/EmployeeAccessDemo.Tests.csproj" />
+  <Project Path="EmployeeAccessDemo/EmployeeAccessDemo.csproj" />
 </Solution>
