@@ -4,4 +4,6 @@
   <Project Path="CleanCodeDevOps.App/CleanCodeDevOps.App.csproj" />
   <Project Path="EmployeeAccessDemo.Tests/EmployeeAccessDemo.Tests.csproj" />
   <Project Path="EmployeeAccessDemo/EmployeeAccessDemo.csproj" />
+  <Project Path="IceCreamMachine.Tests/IceCreamMachine.Tests.csproj" />
+  <Project Path="IceCreamMachine/IceCreamMachine.csproj" />
 </Solution>
