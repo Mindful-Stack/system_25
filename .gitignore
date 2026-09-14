@@ -426,3 +426,7 @@ nul
 # SQLite WAL sidecar files, created while the app runs
 *.db-wal
 *.db-shm
+
+# Project secrets
+.secret
+.also-super-secret
