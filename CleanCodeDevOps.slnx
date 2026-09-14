@@ -4,4 +4,6 @@
   <Project Path="CleanCodeDevOps.App/CleanCodeDevOps.App.csproj" />
   <Project Path="EmployeeAccessDemo.Tests/EmployeeAccessDemo.Tests.csproj" />
   <Project Path="EmployeeAccessDemo/EmployeeAccessDemo.csproj" />
+  <Project Path="IceCreamMachine.Test/IceCreamMachine.Test.csproj" Id="745fee7e-19d6-4eff-a2d1-13d6434a4727" />
+  <Project Path="IceCreamMachine/IceCreamMachine.csproj" Id="75e07949-5378-442f-8881-c383122475c0" />
 </Solution>
