@@ -9,5 +9,7 @@ jobs:
       - name: print some stuff
         run: |
           echo "Hello world, from our workflow"
-          echo "Action name is: ${{ toJson(github) }}"
+          echo "Our env is: ${{ toJson(env) }}"
+          echo "Our vars is: ${{ toJson(vars) }}"
+          echo "Our matrix is: ${{ toJson(matrix) }}"
   
