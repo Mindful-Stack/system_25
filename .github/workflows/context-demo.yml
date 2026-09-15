@@ -1,0 +1,11 @@
+name: Context Demo
+
+on: workflow_dispatch
+
+jobs:
+  print-some-stuff:
+    runs-on: ubuntu-slim
+    steps:
+      - name: Step 1
+        run: echo "Hello world, from our workflow"
+  
