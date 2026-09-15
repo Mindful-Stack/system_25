@@ -2,17 +2,25 @@ name: Context Demo
 on: workflow_dispatch
 env:
   workflow-level: daniel
+  website: mindfulstack.se
 
 jobs:
   print-some-stuff:
     runs-on: ubuntu-latest
     env:
       job-level: ruben
+
+    strategy:
+      matrix:
+        colour: [red, blue, green]
+        number: [1,2,3]
     steps:
       - name: setup another env var
         env:
           another-step: secret
-        run: echo ${{ env.another-step }}
+        run: |
+          echo "with gh expression syntax: ${{ env.another-step }}"
+          echo "with pure bash: $another-step"
     
       - name: print some stuff
         env:
@@ -21,5 +29,10 @@ jobs:
           echo "Hello world, from our workflow"
           echo "Our env is: ${{ toJson(env) }}"
           echo "Our vars is: ${{ toJson(vars) }}"
+      
+      - name: matrix time
+        run: |
           echo "Our matrix is: ${{ toJson(matrix) }}"
+      
+          
   
