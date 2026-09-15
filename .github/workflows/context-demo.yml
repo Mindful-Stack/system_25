@@ -13,14 +13,14 @@ jobs:
     strategy:
       matrix:
         colour: [red, blue, green]
-        number: [1,2,3]
+        name: [Daniel, Ruben, Demelza]
     steps:
       - name: setup another env var
         env:
-          another-step: secret
+          secret: 42
         run: |
-          echo "with gh expression syntax: ${{ env.another-step }}"
-          echo "with pure bash: $another-step"
+          echo "with gh expression syntax: ${{ env.secret }}"
+          echo "with pure bash: $secret"
     
       - name: print some stuff
         env:
@@ -33,6 +33,7 @@ jobs:
       - name: matrix time
         run: |
           echo "Our matrix is: ${{ toJson(matrix) }}"
+          echo "${{ matrix.name}}s favourite color is ${{ matrix.colour}}"
       
           
   
