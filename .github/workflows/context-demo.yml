@@ -1,12 +1,22 @@
 name: Context Demo
-
 on: workflow_dispatch
+env:
+  workflow-level: daniel
 
 jobs:
   print-some-stuff:
     runs-on: ubuntu-latest
+    env:
+      job-level: ruben
     steps:
+      - name: setup another env var
+        env:
+          another-step: secret
+        run: echo ${{ env.another-step }}
+    
       - name: print some stuff
+        env:
+          this-step: demelza
         run: |
           echo "Hello world, from our workflow"
           echo "Our env is: ${{ toJson(env) }}"
