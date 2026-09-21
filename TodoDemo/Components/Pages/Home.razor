@@ -1,0 +1,185 @@
+﻿@page "/"
+@using TodoDemo.Shared
+
+@inject System.Net.Http.HttpClient Http
+
+<PageTitle>The Quest</PageTitle>
+
+<header class="page-header">
+    <div>
+        <h1>The Quest</h1>
+        <p class="page-subtitle">Things to do before the Fourth Age.</p>
+    </div>
+    <button class="btn btn-primary" @onclick="ShowCreate">New todo</button>
+</header>
+
+@if (isLoading)
+{
+    <p class="muted">Loading...</p>
+}
+else if (todos == null || !todos.Any())
+{
+    <div class="empty-state">
+        <p>Nothing left to do. Go home to the Shire.</p>
+        <button class="btn btn-primary" @onclick="ShowCreate">Add a todo</button>
+    </div>
+}
+else
+{
+    <table class="table todo-table">
+        <thead>
+            <tr>
+                <th class="col-done"><span class="visually-hidden">Done</span></th>
+                <th>Todo</th>
+                <th class="col-created">Created</th>
+                <th class="col-actions"><span class="visually-hidden">Actions</span></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var todo in todos)
+            {
+                <tr class="@(todo.IsDone ? "is-done" : null)">
+                    <td class="col-done">
+                        <input type="checkbox" class="form-check-input"
+                               checked="@todo.IsDone"
+                               @onchange="() => ToggleStatus(todo.Id, !todo.IsDone)"
+                               aria-label="@($"Mark {todo.Title} as {(todo.IsDone ? "not done" : "done")}")" />
+                    </td>
+                    <td>
+                        <span class="todo-title">@todo.Title</span>
+                        @if (!string.IsNullOrEmpty(todo.Description))
+                        {
+                            <span class="todo-description">@todo.Description</span>
+                        }
+                    </td>
+                    <td class="col-created">
+                        @todo.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd")
+                    </td>
+                    <td class="col-actions">
+                        <button class="btn btn-link btn-sm" @onclick="() => ShowEdit(todo.Id)">Edit</button>
+                        <button class="btn btn-link btn-sm link-danger" @onclick="() => Delete(todo.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <p class="summary">
+        @todos.Count todos, @todos.Count(t => t.IsDone) done, @todos.Count(t => !t.IsDone) to go
+    </p>
+}
+
+@if (showEditor)
+{
+    <div class="modal-backdrop" @onclick="OnCancelled"></div>
+    <div class="modal-root">
+        <div class="modal-card">
+            <CreateEditTodo Id="editingId" OnSaved="OnSaved" OnCancelled="OnCancelled" />
+        </div>
+    </div>
+}
+
+@code {
+    List<TodoDto>? todos;
+    bool isLoading = true;
+
+    // Editor state
+    bool showEditor = false;
+    int editingId = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Reload();
+    }
+
+    async Task Reload()
+    {
+        isLoading = true;
+        StateHasChanged();
+        await Task.Delay(100); // Small delay to show loading state
+        todos = await Http.GetFromJsonAsync<List<TodoDto>>("api/todos");
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    void ShowCreate()
+    {
+        editingId = 0;
+        showEditor = true;
+    }
+
+    void ShowEdit(int id)
+    {
+        editingId = id;
+        showEditor = true;
+    }
+
+    async Task Delete(int id)
+    {
+        var res = await Http.DeleteAsync($"api/todos/{id}");
+        if (res.IsSuccessStatusCode) 
+        {
+            await Reload();
+        }
+    }
+
+    async Task ToggleStatus(int id, bool newStatus)
+    {
+        if (todos == null) return;
+
+        // Find the todo in our local list
+        var todoIndex = todos.FindIndex(t => t.Id == id);
+        if (todoIndex == -1) return;
+
+        var currentTodo = todos[todoIndex];
+
+        // Update local state immediately for instant UI feedback
+        var updatedTodo = currentTodo with { IsDone = newStatus };
+        todos[todoIndex] = updatedTodo;
+        StateHasChanged(); // Trigger UI update immediately
+
+        // Update server in background
+        try
+        {
+            var update = new { 
+                Id = currentTodo.Id, 
+                Title = currentTodo.Title, 
+                Description = currentTodo.Description, 
+                IsDone = newStatus,
+                CreatedAt = currentTodo.CreatedAt
+            };
+
+            var res = await Http.PutAsJsonAsync($"api/todos/{id}", update);
+            
+            // If server update fails, revert the local change
+            if (!res.IsSuccessStatusCode)
+            {
+                todos[todoIndex] = currentTodo; // Revert to original state
+                StateHasChanged();
+                // Optionally show error message here
+            }
+        }
+        catch (Exception)
+        {
+            // Revert on exception
+            todos[todoIndex] = currentTodo;
+            StateHasChanged();
+            // Optionally show error message here
+        }
+    }
+
+    async Task OnSaved()
+    {
+        showEditor = false;
+        editingId = 0;
+        await Reload();
+    }
+
+    void OnCancelled()
+    {
+        showEditor = false;
+        editingId = 0;
+    }
+
+    record TodoDto(int Id, string Title, string? Description, bool IsDone, DateTime CreatedAt);
+}
