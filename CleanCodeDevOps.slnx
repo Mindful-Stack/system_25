@@ -6,5 +6,6 @@
   <Project Path="EmployeeAccessDemo/EmployeeAccessDemo.csproj" />
   <Project Path="IceCreamMachine.Tests/IceCreamMachine.Tests.csproj" />
   <Project Path="IceCreamMachine/IceCreamMachine.csproj" />
+  <Project Path="TodoDemo.Tests/TodoDemo.Tests.csproj" />
   <Project Path="TodoDemo/TodoDemo.csproj" />
 </Solution>

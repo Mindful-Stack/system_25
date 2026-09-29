@@ -36,6 +36,7 @@ builder.Services.AddScoped(sp =>
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+// override void ConfigureWebHost injects here
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
