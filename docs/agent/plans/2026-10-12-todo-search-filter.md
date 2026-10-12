@@ -365,8 +365,7 @@ In the `@code` block, replace everything from `List<TodoDto>? todos;` through th
         if (!isLoading && q == currentQ) return;
 
         currentQ = q;
-        // Refresh, a shared link or back/forward: show the URL's term in the box.
-        if (Normalize(searchText) != q) searchText = q ?? "";
+        // (Superseded by review: do NOT copy Q back into searchText here; see "Review amendments" below.)
 
         await Reload();
     }
