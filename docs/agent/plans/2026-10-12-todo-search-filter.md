@@ -237,7 +237,7 @@ Properties this code must have:
 
 Run: `dotnet test TodoDemo.Tests`
 
-Expected: `Passed! - Failed: 0, Passed: 11` (the 5 existing tests and the 6 new ones).
+Expected: `Passed! - Failed: 0, Passed: 12` (the 5 existing tests and the 6 new ones).
 
 - [ ] **Step 5: Commit**
 
@@ -440,7 +440,7 @@ Expected: `Build succeeded` with 0 errors. Fix any new warnings in `Home.razor`.
 
 Run: `dotnet test TodoDemo.Tests`
 
-Expected: `Passed! - Failed: 0, Passed: 11`.
+Expected: `Passed! - Failed: 0, Passed: 12`.
 
 - [ ] **Step 7: Commit**
 
@@ -448,6 +448,14 @@ Expected: `Passed! - Failed: 0, Passed: 11`.
 git add TodoDemo/Components/Pages/Home.razor TodoDemo/wwwroot/app.css
 git commit -m "Add debounced search box synced to ?q= on the home page"
 ```
+
+---
+
+**Review amendments (applied after code review):** the code above had four defects, fixed in a follow-up commit:
+- **Typed characters overwritten.** `NavigateTo` is a round trip on Blazor Server, so copying `Q` into `searchText` on every parameter set overwrote characters typed mid-round-trip. The box is now seeded once in `OnInitialized`, and that line is gone from `OnParametersSetAsync`.
+- **Stale navigation.** `OnSearchInput` now rechecks the token after the delay, so a debounce cancelled after its delay finished does not navigate.
+- **Wrong row on revert.** `ToggleStatus` now finds the row again by id when reverting, because a search reload can replace `todos` while the PUT is in flight.
+- **Button wrapping.** The "New todo" button no longer shrinks or wraps.
 
 ---
 

@@ -42,10 +42,12 @@ Change only `TodoDemo/Features/Todos/GetTodos.cs`. The route and `TodoEndpoints.
 
 ## 2. UI: search box in `Home.razor`
 
-The page URL holds the search term. Typing changes the URL, and a URL change loads the list. Refresh, shared links and back/forward therefore all take the same path.
+The page URL holds the search term. Typing changes the URL, and a URL change loads the list, so a refresh and a shared link take the same path as typing.
+
+The box is filled from the URL only once, when the page first loads. After that only the user's typing changes it. On Blazor Server, `NavigateTo` is a round trip to the browser, so copying every URL change back into the box would overwrite characters typed while the round trip was in flight. Nothing else can change `?q=` while the page is open: no in-app link targets `/?q=`, and `replace: true` adds no history entries for back/forward to return to.
 
 - **Reading the URL:** add `[SupplyParameterFromQuery(Name = "q")] public string? Q { get; set; }`. Move the initial fetch from `OnInitializedAsync` to `OnParametersSetAsync`, so that a new `Q` reloads the list.
-- **Input:** an `<input type="search">` in the page header, next to "New todo". It is bound with `@bind:event="oninput"` and starts with the value of `Q`.
+- **Input:** an `<input type="search">` in the page header, next to "New todo". It is bound with `@bind:event="oninput"` and is set from `Q` once, in `OnInitialized`.
 - **Debounce:** each change cancels the previous `CancellationTokenSource` and waits 300 ms. An empty box skips the wait. After the wait the component calls `NavigationManager.NavigateTo(Nav.GetUriWithQueryParameter("q", term), replace: true)`. Passing `null` removes `?q=`, and `replace: true` keeps keystrokes out of the browser history.
 - **Fetch:** `Reload()` calls `api/todos`, adding `?q=` plus `Uri.EscapeDataString(Q)` when a term is set. If an earlier request completes after a newer one has started, its response is discarded.
 - **Loading state:** "Loading..." appears only on the first load. During a search the current results stay on screen until the new ones arrive, so the table does not flicker and the input keeps focus.
