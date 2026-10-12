@@ -112,6 +112,9 @@ else
     bool showEditor = false;
     int editingId = 0;
 
+    // Refresh or a shared link: start the box with the URL's term. After that the box belongs to the user.
+    protected override void OnInitialized() => searchText = Q ?? "";
+
     // The URL is the source of truth: typing changes ?q=, and a ?q= change lands here.
     protected override async Task OnParametersSetAsync()
     {
@@ -119,8 +122,6 @@ else
         if (!isLoading && q == currentQ) return;
 
         currentQ = q;
-        // Refresh, a shared link or back/forward: show the URL's term in the box.
-        if (Normalize(searchText) != q) searchText = q ?? "";
 
         await Reload();
     }
@@ -137,6 +138,7 @@ else
         {
             try { await Task.Delay(300, ct); }
             catch (TaskCanceledException) { return; } // the user kept typing
+            if (ct.IsCancellationRequested) return; // cancelled after the delay had already finished
         }
 
         // null removes ?q= from the URL; replace keeps keystrokes out of browser history.
@@ -204,6 +206,13 @@ else
 
         var currentTodo = todos[todoIndex];
 
+        // The list may have been reloaded (e.g. by a search) while the PUT was in flight: find the row again by id.
+        void Revert()
+        {
+            var i = todos?.FindIndex(t => t.Id == id) ?? -1;
+            if (i >= 0) todos![i] = currentTodo;
+        }
+
         // Update local state immediately for instant UI feedback
         var updatedTodo = currentTodo with { IsDone = newStatus };
         todos[todoIndex] = updatedTodo;
@@ -212,20 +221,20 @@ else
         // Update server in background
         try
         {
-            var update = new { 
-                Id = currentTodo.Id, 
-                Title = currentTodo.Title, 
-                Description = currentTodo.Description, 
+            var update = new {
+                Id = currentTodo.Id,
+                Title = currentTodo.Title,
+                Description = currentTodo.Description,
                 IsDone = newStatus,
                 CreatedAt = currentTodo.CreatedAt
             };
 
             var res = await Http.PutAsJsonAsync($"api/todos/{id}", update);
-            
+
             // If server update fails, revert the local change
             if (!res.IsSuccessStatusCode)
             {
-                todos[todoIndex] = currentTodo; // Revert to original state
+                Revert();
                 StateHasChanged();
                 // Optionally show error message here
             }
@@ -233,7 +242,7 @@ else
         catch (Exception)
         {
             // Revert on exception
-            todos[todoIndex] = currentTodo;
+            Revert();
             StateHasChanged();
             // Optionally show error message here
         }

@@ -156,6 +156,11 @@ h1:focus {
     flex: 1;
 }
 
+.page-actions .btn {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
 .theme-toggle {
     position: absolute;
     top: 1.4rem;
