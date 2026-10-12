@@ -38,7 +38,7 @@ Change only `TodoDemo/Features/Todos/GetTodos.cs`. The route and `TodoEndpoints.
 - The response type stays `Ok<List<TodoItem>>`. No matches returns `200` with `[]`, never `404`.
 - There is no validation and no length limit. EF parameterises the term, so injection is not a risk.
 
-**Known limitation:** SQLite's `lower()` folds ASCII letters only, so on SQLite `ö` does not match `Ö`. SQL Server is not affected. We accept this and do not work around it.
+**Known limitation:** SQLite's `lower()` folds ASCII letters only, while the C# side folds the term with full Unicode `ToLowerInvariant()`. The failing side is therefore the stored text: on SQLite, a todo containing an uppercase non-ASCII letter (`Ålg`) is never found by a search that includes that letter, whatever case the user types. A stored `ålg` is still found by `ÅLG`. SQL Server's `LOWER` handles Unicode and is not affected. We accept this and do not work around it.
 
 ## 2. UI: search box in `Home.razor`
 
