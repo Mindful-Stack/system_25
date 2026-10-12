@@ -144,8 +144,16 @@ h1:focus {
     order: 1;
 }
 
-.page-header > .btn {
+.page-header > .page-actions {
     order: 3;
+    display: flex;
+    gap: 0.75rem;
+    width: 100%;
+    max-width: 28rem;
+}
+
+.page-actions .search-input {
+    flex: 1;
 }
 
 .theme-toggle {

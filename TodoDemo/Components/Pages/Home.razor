@@ -1,7 +1,9 @@
 ﻿@page "/"
 @using TodoDemo.Shared
+@implements IDisposable
 
 @inject System.Net.Http.HttpClient Http
+@inject NavigationManager Nav
 
 <PageTitle>The Quest</PageTitle>
 
@@ -10,7 +12,12 @@
         <h1>The Quest</h1>
         <p class="page-subtitle">Things to do before the Fourth Age.</p>
     </div>
-    <button class="btn btn-primary" @onclick="ShowCreate">New todo</button>
+    <div class="page-actions">
+        <input type="search" class="form-control search-input"
+               placeholder="Search todos" aria-label="Search todos"
+               @bind="searchText" @bind:event="oninput" @bind:after="OnSearchInput" />
+        <button class="btn btn-primary" @onclick="ShowCreate">New todo</button>
+    </div>
 </header>
 
 @if (isLoading)
@@ -19,10 +26,19 @@
 }
 else if (todos == null || !todos.Any())
 {
-    <div class="empty-state">
-        <p>Nothing left to do. Go home to the Shire.</p>
-        <button class="btn btn-primary" @onclick="ShowCreate">Add a todo</button>
-    </div>
+    @if (currentQ is not null)
+    {
+        <div class="empty-state">
+            <p>No todos match "@currentQ".</p>
+        </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <p>Nothing left to do. Go home to the Shire.</p>
+            <button class="btn btn-primary" @onclick="ShowCreate">Add a todo</button>
+        </div>
+    }
 }
 else
 {
@@ -80,26 +96,81 @@ else
 }
 
 @code {
+    [SupplyParameterFromQuery(Name = "q")]
+    public string? Q { get; set; }
+
     List<TodoDto>? todos;
     bool isLoading = true;
+
+    // Search state
+    string searchText = "";      // what is in the box right now (may have trailing spaces while typing)
+    string? currentQ;            // the normalised term the list was loaded for; null = no filter
+    CancellationTokenSource? debounceCts;
+    CancellationTokenSource? loadCts;
 
     // Editor state
     bool showEditor = false;
     int editingId = 0;
 
-    protected override async Task OnInitializedAsync()
+    // The URL is the source of truth: typing changes ?q=, and a ?q= change lands here.
+    protected override async Task OnParametersSetAsync()
     {
+        var q = Normalize(Q);
+        if (!isLoading && q == currentQ) return;
+
+        currentQ = q;
+        // Refresh, a shared link or back/forward: show the URL's term in the box.
+        if (Normalize(searchText) != q) searchText = q ?? "";
+
         await Reload();
+    }
+
+    async Task OnSearchInput()
+    {
+        debounceCts?.Cancel();
+        debounceCts = new CancellationTokenSource();
+        var ct = debounceCts.Token;
+        var term = Normalize(searchText);
+
+        // A cleared box searches right away; anything else waits until typing pauses.
+        if (term is not null)
+        {
+            try { await Task.Delay(300, ct); }
+            catch (TaskCanceledException) { return; } // the user kept typing
+        }
+
+        // null removes ?q= from the URL; replace keeps keystrokes out of browser history.
+        Nav.NavigateTo(Nav.GetUriWithQueryParameter("q", term), replace: true);
     }
 
     async Task Reload()
     {
-        isLoading = true;
-        StateHasChanged();
-        await Task.Delay(100); // Small delay to show loading state
-        todos = await Http.GetFromJsonAsync<List<TodoDto>>("api/todos");
+        loadCts?.Cancel();
+        loadCts = new CancellationTokenSource();
+        var ct = loadCts.Token;
+
+        var url = currentQ is null ? "api/todos" : $"api/todos?q={Uri.EscapeDataString(currentQ)}";
+        try
+        {
+            if (isLoading) await Task.Delay(100, ct); // Small delay to show loading state
+            var result = await Http.GetFromJsonAsync<List<TodoDto>>(url, ct);
+            if (ct.IsCancellationRequested) return;
+            todos = result;
+        }
+        catch (OperationCanceledException)
+        {
+            return; // a newer Reload started; its result wins
+        }
+
         isLoading = false;
-        StateHasChanged();
+    }
+
+    static string? Normalize(string? s) => string.IsNullOrWhiteSpace(s) ? null : s.Trim();
+
+    public void Dispose()
+    {
+        debounceCts?.Cancel();
+        loadCts?.Cancel();
     }
 
     void ShowCreate()
