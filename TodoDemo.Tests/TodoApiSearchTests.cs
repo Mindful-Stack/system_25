@@ -85,6 +85,22 @@ public class TodoApiSearchTests : IClassFixture<CustomWebApplicationFactory<Prog
     }
 
     [Fact]
+    public async Task SearchWithUppercaseTermMatchesLowercaseText()
+    {
+        // Arrange: sparat med gemener, sökt med VERSALER
+        var token = NewToken();
+        var match = await Seed($"ring {token}");
+        var decoy = await Seed($"ring {NewToken()}");
+
+        // Act
+        var result = await GetTodos($"RING {token.ToUpperInvariant()}");
+
+        // Assert
+        Assert.Contains(result, t => t.Id == match.Id);
+        Assert.DoesNotContain(result, t => t.Id == decoy.Id);
+    }
+
+    [Fact]
     public async Task SearchWithNoMatchesReturnsEmptyList()
     {
         // Arrange
